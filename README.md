@@ -1,3 +1,5 @@
+Sample app demostrating the usage of [SUINavigationFusion](https://github.com/ivalx1s/SUINavigationFusion) library
+
 ```swift
 import SwiftUI
 import SUINavigationFusion

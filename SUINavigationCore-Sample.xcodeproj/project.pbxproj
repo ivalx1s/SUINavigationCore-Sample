@@ -11,6 +11,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		72482C122F0428A0005F6445 /* SUINavigationFusion */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SUINavigationFusion; path = ../SUINavigationFusion; sourceTree = SOURCE_ROOT; };
 		72FC5AAC2E58A9DB004EBFB6 /* SUINavigationCore-Sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SUINavigationCore-Sample.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -39,6 +40,7 @@
 			children = (
 				72FC5AAE2E58A9DB004EBFB6 /* SUINavigationCore-Sample */,
 				72FC5AAD2E58A9DB004EBFB6 /* Products */,
+				72482C122F0428A0005F6445 /* SUINavigationFusion */,
 			);
 			sourceTree = "<group>";
 		};

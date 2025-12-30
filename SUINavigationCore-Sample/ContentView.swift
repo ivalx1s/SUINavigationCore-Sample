@@ -9,12 +9,11 @@ struct NavigationFusionSampleApp: App {
                 RootScreen()
                 // Root title/subtitle + actions
                     .topNavigationBarTitle("Inbox")
-                    .topNavigationBarSubtitle { Text("All messages • 127") }
+                    .topNavigationBarSubtitle("All messages • 127")
                     .topNavigationBarLeading {
                         Button(action: { }) {
                             Image(systemName: "person.circle.fill")
                                 .font(.title2)
-                                .padding(.leading, 4)
                         }
                     }
                     .topNavigationBarTrailing(position: .secondary) {
@@ -23,7 +22,6 @@ struct NavigationFusionSampleApp: App {
                                 .font(.title3)
                         }
                         .buttonStyle(.plain)
-                        .padding(.trailing, 10)
                     }
                     .topNavigationBarTrailingPrimary {
                         Button {
@@ -50,7 +48,7 @@ private let demoTopBarConfig = TopNavigationBarConfiguration(
     subtitleFontColor: .secondary,
     titleFontWeight: .semibold,
     subtitleFontWeight: nil,
-    titleStackSpacing: 4,
+    titleStackSpacing: nil,
     tintColor: .accentColor,
     backButtonIcon: nil // system chevron
 )

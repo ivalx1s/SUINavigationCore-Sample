@@ -662,6 +662,8 @@ private struct VisibilityDemoScreen: View {
     @State private var showsTrailingPrimary = true
     @State private var showsTrailingSecondary = true
     @State private var hidesBackButton = false
+    @State private var isAlertPresented = false
+    @State private var alertMessage = ""
 
     var body: some View {
         OffsetObservingScrollView {
@@ -690,7 +692,9 @@ private struct VisibilityDemoScreen: View {
         .topNavigationBarTitle("Visibility")
         .topNavigationBarSubtitle("Toggle sections and positions")
         .topNavigationBarLeading(id: "leading") {
-            Button {} label: {
+            Button {
+                showAlert("Leading button tapped")
+            } label: {
                 Image(systemName: "person.circle.fill")
                     .font(.title3)
                     .accessibilityLabel("Leading")
@@ -698,7 +702,9 @@ private struct VisibilityDemoScreen: View {
             .buttonStyle(.plain)
         }
         .topNavigationBarTrailing(id: "secondary", position: .secondary) {
-            Button {} label: {
+            Button {
+                showAlert("Trailing secondary button tapped")
+            } label: {
                 Image(systemName: "magnifyingglass")
                     .font(.title3)
                     .accessibilityLabel("Secondary")
@@ -706,7 +712,9 @@ private struct VisibilityDemoScreen: View {
             .buttonStyle(.plain)
         }
         .topNavigationBarTrailingPrimary(id: "primary") {
-            Button {} label: {
+            Button {
+                showAlert("Trailing primary button tapped")
+            } label: {
                 Image(systemName: "ellipsis.circle")
                     .font(.title3)
                     .accessibilityLabel("Primary")
@@ -718,6 +726,16 @@ private struct VisibilityDemoScreen: View {
         .topNavigationBarVisibility(showsTrailingPrimary ? .visible : .hidden, for: .trailingPosition(.primary))
         .topNavigationBarVisibility(showsTrailingSecondary ? .visible : .hidden, for: .trailingPosition(.secondary))
         .topNavigationBarHidesBackButton(hidesBackButton)
+        .alert("Action", isPresented: $isAlertPresented) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(alertMessage)
+        }
+    }
+
+    private func showAlert(_ message: String) {
+        alertMessage = message
+        isAlertPresented = true
     }
 }
 

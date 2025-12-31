@@ -170,8 +170,13 @@ private struct PlaygroundTab: View {
     @State private var state = NavBarPlaygroundState()
 
     var body: some View {
+        let environmentTint = state.environmentTintStyle.color
+
         NavigationShell(navigator: navigator, configuration: state.configuration) {
             NavBarPlaygroundScreen(state: $state)
+        }
+        .applyIf(environmentTint != nil) { view in
+            view.tint(environmentTint!)
         }
     }
 }
@@ -263,11 +268,21 @@ private struct NavBarPlaygroundScreen: View {
 
                 GroupBox("Icons & Tint") {
                     VStack(alignment: .leading, spacing: 12) {
-                        Picker("Tint", selection: $state.tintStyle) {
+                        Picker("Environment tint", selection: $state.environmentTintStyle) {
                             ForEach(NavBarPlaygroundState.ColorStyle.allCases, id: \.self) { style in
                                 Text(style.title).tag(style)
                             }
                         }
+
+                        Picker("Configuration tint", selection: $state.tintStyle) {
+                            ForEach(NavBarPlaygroundState.ColorStyle.allCases, id: \.self) { style in
+                                Text(style.title).tag(style)
+                            }
+                        }
+
+                        Text("Tip: the preview screen also demonstrates per-screen overrides via `topNavigationBarTintColor`.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
 
                         Toggle("Custom back icon", isOn: $state.usesCustomBackIcon)
                         if state.usesCustomBackIcon {
@@ -329,6 +344,40 @@ private struct NavBarPlaygroundScreen: View {
 private struct PlaygroundPreviewScreen: View {
     @EnvironmentObject private var navigator: Navigator
     @State private var isFavorite = false
+    @State private var barTintOverride: BarTintOverrideStyle = .automatic
+
+    private enum BarTintOverrideStyle: String, CaseIterable, Hashable {
+        case automatic
+        case inherit
+        case red
+        case blue
+        case green
+        case orange
+        case purple
+
+        var title: String {
+            switch self {
+            case .automatic: "Automatic (configuration)"
+            case .inherit: "Inherit (environment)"
+            case .red: "Red"
+            case .blue: "Blue"
+            case .green: "Green"
+            case .orange: "Orange"
+            case .purple: "Purple"
+            }
+        }
+
+        var forcedTint: Color? {
+            switch self {
+            case .automatic, .inherit: nil
+            case .red: .red
+            case .blue: .blue
+            case .green: .green
+            case .orange: .orange
+            case .purple: .purple
+            }
+        }
+    }
 
     var body: some View {
         OffsetObservingScrollView {
@@ -336,6 +385,20 @@ private struct PlaygroundPreviewScreen: View {
                 Text("This screen is here to preview configuration on a non-root view (back button, tint, divider, etc.).")
                     .foregroundStyle(.secondary)
                     .padding(.top, 12)
+
+                GroupBox("Top bar tint override") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Picker("Override", selection: $barTintOverride) {
+                            ForEach(BarTintOverrideStyle.allCases, id: \.self) { style in
+                                Text(style.title).tag(style)
+                            }
+                        }
+
+                        Text("Precedence: per-screen override → configuration tint → environment tint.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
 
                 Button {
                     navigator.push(PlaygroundPreviewScreen())
@@ -360,7 +423,7 @@ private struct PlaygroundPreviewScreen: View {
             .padding(.bottom, 24)
         }
         .topNavigationBarTitle("Preview")
-        .topNavigationBarSubtitle("Back icon + tint")
+        .topNavigationBarSubtitle("Back icon + tint • \(barTintOverride.title)")
         .topNavigationBarTrailingPrimary(id: "favorite", updateKey: isFavorite) {
             Button {
                 isFavorite.toggle()
@@ -380,6 +443,12 @@ private struct PlaygroundPreviewScreen: View {
                     .accessibilityLabel("Close")
             }
             .buttonStyle(.plain)
+        }
+        .applyIf(barTintOverride == .inherit) { view in
+            view.topNavigationBarTintColor(nil)
+        }
+        .applyIf(barTintOverride.forcedTint != nil) { view in
+            view.topNavigationBarTintColor(barTintOverride.forcedTint!)
         }
     }
 }
@@ -1005,7 +1074,8 @@ private struct AboutScreen: View {
                     "Show all public APIs: NavigationShell, Navigator, top bar modifiers, visibility API, scroll hook.",
                     "All buttons are functional (no placeholder actions).",
                     "Demonstrate update edge cases for bar items (`id` + `updateKey`).",
-                    "Demonstrate scroll-dependent background using PositionObservingViewPreferenceKey."
+                    "Demonstrate scroll-dependent background using PositionObservingViewPreferenceKey.",
+                    "Demonstrate tint precedence: environment tint vs configuration tint vs per-screen override (`topNavigationBarTintColor`)."
                 ])
 
                 Text("Notes")
@@ -1172,6 +1242,7 @@ private struct NavBarPlaygroundState: Equatable {
     var subtitleColorStyle: ColorStyle = .system
 
     var titleStackSpacingStyle: SpacingStyle = .systemDefault
+    var environmentTintStyle: ColorStyle = .system
     var tintStyle: ColorStyle = .system
 
     var usesCustomBackIcon = false

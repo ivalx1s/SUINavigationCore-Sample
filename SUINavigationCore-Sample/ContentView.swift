@@ -343,6 +343,13 @@ private struct PlaygroundPreviewScreen: View {
     @Binding var state: NavBarPlaygroundState
     @State private var isFavorite = false
     @State private var barTintOverride: BarTintOverrideStyle = .automatic
+    @State private var savedBackgroundSettings: BackgroundSettings? = nil
+
+    private struct BackgroundSettings: Equatable {
+        var backgroundStyle: NavBarPlaygroundState.BackgroundStyle
+        var materialStyle: NavBarPlaygroundState.MaterialStyle
+        var colorStyle: NavBarPlaygroundState.ColorStyle
+    }
 
     private enum BarTintOverrideStyle: String, CaseIterable, Hashable {
         case automatic
@@ -388,6 +395,34 @@ private struct PlaygroundPreviewScreen: View {
         }
     }
 
+    private var backgroundFollowsTintBinding: Binding<Bool> {
+        Binding(
+            get: { state.backgroundStyle == .color && state.colorStyle == .accent },
+            set: { newValue in
+                if newValue {
+                    if savedBackgroundSettings == nil {
+                        savedBackgroundSettings = BackgroundSettings(
+                            backgroundStyle: state.backgroundStyle,
+                            materialStyle: state.materialStyle,
+                            colorStyle: state.colorStyle
+                        )
+                    }
+                    state.backgroundStyle = .color
+                    state.colorStyle = .accent
+                } else {
+                    if let savedBackgroundSettings {
+                        state.backgroundStyle = savedBackgroundSettings.backgroundStyle
+                        state.materialStyle = savedBackgroundSettings.materialStyle
+                        state.colorStyle = savedBackgroundSettings.colorStyle
+                        self.savedBackgroundSettings = nil
+                    } else {
+                        state.backgroundStyle = .material
+                    }
+                }
+            }
+        )
+    }
+
     var body: some View {
         OffsetObservingScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -406,6 +441,10 @@ private struct PlaygroundPreviewScreen: View {
                         Text("Precedence: per-screen override → configuration tint → environment tint.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
+
+                        Text("Tint affects bar items (back button, leading/trailing content). Background is configured separately via `TopNavigationBarConfiguration`.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
                     }
                 }
 
@@ -418,6 +457,16 @@ private struct PlaygroundPreviewScreen: View {
                         }
 
                         Text("This updates `TopNavigationBarConfiguration.tintColor` and applies to all screens in this shell.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                GroupBox("Bar background") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Toggle("Background follows bar tint (Accent color)", isOn: backgroundFollowsTintBinding)
+
+                        Text("Tip: if scroll-dependent opacity is enabled, the background is transparent at the scroll edge. Scroll a bit to see the color.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
@@ -1138,10 +1187,11 @@ private struct NavBarPlaygroundState: Equatable {
         }
     }
 
-    enum ColorStyle: CaseIterable { case system; case secondarySystem; case red; case blue; case green; case orange; case purple
+    enum ColorStyle: CaseIterable { case system; case accent; case secondarySystem; case red; case blue; case green; case orange; case purple
         var title: String {
             switch self {
             case .system: "System"
+            case .accent: "Accent"
             case .secondarySystem: "Secondary"
             case .red: "Red"
             case .blue: "Blue"
@@ -1153,6 +1203,7 @@ private struct NavBarPlaygroundState: Equatable {
         var color: Color? {
             switch self {
             case .system: nil
+            case .accent: .accentColor
             case .secondarySystem: Color(uiColor: .secondarySystemBackground)
             case .red: .red
             case .blue: .blue

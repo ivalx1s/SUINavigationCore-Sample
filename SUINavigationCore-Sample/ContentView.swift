@@ -188,9 +188,10 @@ private struct NavBarPlaygroundScreen: View {
     var body: some View {
         OffsetObservingScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("Change configuration options and observe how the bar updates. (Pushed screens use the configuration value at the time they were pushed.)")
+                Text("Change configuration options and observe how the bar updates (including pushed screens).")
                     .foregroundStyle(.secondary)
                     .padding(.top, 12)
+                    .accessibilityLabel("Change configuration options and observe how the bar updates, including pushed screens.")
 
                 GroupBox("Background") {
                     VStack(alignment: .leading, spacing: 12) {
@@ -296,7 +297,7 @@ private struct NavBarPlaygroundScreen: View {
                 }
 
                 Button {
-                    navigator.push(PlaygroundPreviewScreen())
+                    navigator.push(PlaygroundPreviewScreen(state: $state))
                 } label: {
                     Label("Push preview screen", systemImage: "arrow.right.square")
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -330,7 +331,7 @@ private struct NavBarPlaygroundScreen: View {
         }
         .topNavigationBarTrailingPrimary(id: "preview") {
             Button {
-                navigator.push(PlaygroundPreviewScreen())
+                navigator.push(PlaygroundPreviewScreen(state: $state))
             } label: {
                 Image(systemName: "arrow.right.square")
                     .font(.title3)
@@ -343,6 +344,7 @@ private struct NavBarPlaygroundScreen: View {
 
 private struct PlaygroundPreviewScreen: View {
     @EnvironmentObject private var navigator: Navigator
+    @Binding var state: NavBarPlaygroundState
     @State private var isFavorite = false
     @State private var barTintOverride: BarTintOverrideStyle = .automatic
 
@@ -400,8 +402,22 @@ private struct PlaygroundPreviewScreen: View {
                     }
                 }
 
+                GroupBox("Configuration tint (stack-wide)") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Picker("Tint", selection: $state.tintStyle) {
+                            ForEach(NavBarPlaygroundState.ColorStyle.allCases, id: \.self) { style in
+                                Text(style.title).tag(style)
+                            }
+                        }
+
+                        Text("This updates `TopNavigationBarConfiguration.tintColor` and applies to all screens in this shell.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
                 Button {
-                    navigator.push(PlaygroundPreviewScreen())
+                    navigator.push(PlaygroundPreviewScreen(state: $state))
                 } label: {
                     Label("Push another preview screen", systemImage: "square.stack.3d.up")
                         .frame(maxWidth: .infinity, alignment: .leading)

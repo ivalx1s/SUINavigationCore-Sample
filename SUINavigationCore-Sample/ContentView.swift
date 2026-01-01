@@ -173,7 +173,6 @@ private struct PlaygroundTab: View {
         NavigationShell(navigator: navigator, configuration: state.configuration) {
             NavBarPlaygroundScreen(state: $state)
         }
-        //.tint(state.environmentTintStyle.color ?? .accentColor)
     }
 }
 
@@ -265,12 +264,6 @@ private struct NavBarPlaygroundScreen: View {
 
                 GroupBox("Icons & Tint") {
                     VStack(alignment: .leading, spacing: 12) {
-                        Picker("Environment tint", selection: $state.environmentTintStyle) {
-                            ForEach(NavBarPlaygroundState.ColorStyle.allCases, id: \.self) { style in
-                                Text(style.title).tag(style)
-                            }
-                        }
-
                         Picker("Configuration tint", selection: $state.tintStyle) {
                             ForEach(NavBarPlaygroundState.ColorStyle.allCases, id: \.self) { style in
                                 Text(style.title).tag(style)
@@ -346,24 +339,6 @@ private struct PlaygroundPreviewScreen: View {
                     .foregroundStyle(.secondary)
                     .padding(.top, 12)
 
-                GroupBox("Environment tint (shell-wide)") {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Picker("Tint", selection: $state.environmentTintStyle) {
-                            ForEach(NavBarPlaygroundState.ColorStyle.allCases, id: \.self) { style in
-                                Text(style.title).tag(style)
-                            }
-                        }
-
-                        Text("This sets SwiftUI `.tint(...)` above `NavigationShell`. It’s used when configuration tint is `nil`.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-
-                        Text("Tint affects standard controls (Buttons, Links, Toggles, etc.) and top bar items. Background is configured separately via `TopNavigationBarConfiguration`.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
                 GroupBox("Configuration tint (stack-wide)") {
                     VStack(alignment: .leading, spacing: 12) {
                         Picker("Tint", selection: $state.tintStyle) {
@@ -401,7 +376,7 @@ private struct PlaygroundPreviewScreen: View {
             .padding(.bottom, 24)
         }
         .topNavigationBarTitle("Preview")
-        .topNavigationBarSubtitle("Back icon + tint • config: \(state.tintStyle.title) • env: \(state.environmentTintStyle.title)")
+        .topNavigationBarSubtitle("Back icon + tint • config: \(state.tintStyle.title)")
         .topNavigationBarTrailingPrimary(id: "favorite", updateKey: isFavorite) {
             Button {
                 isFavorite.toggle()
@@ -1045,7 +1020,7 @@ private struct AboutScreen: View {
                     "All buttons are functional (no placeholder actions).",
                     "Demonstrate update edge cases for bar items (`id` + `updateKey`).",
                     "Demonstrate scroll-dependent background using PositionObservingViewPreferenceKey.",
-                    "Demonstrate tint precedence: configuration tint vs environment tint."
+                    "Demonstrate stack-wide tint via `TopNavigationBarConfiguration.tintColor`."
                 ])
 
                 Text("Notes")
@@ -1212,7 +1187,6 @@ private struct NavBarPlaygroundState: Equatable {
     var subtitleColorStyle: ColorStyle = .system
 
     var titleStackSpacingStyle: SpacingStyle = .systemDefault
-    var environmentTintStyle: ColorStyle = .system
     var tintStyle: ColorStyle = .system
 
     var usesCustomBackIcon = false

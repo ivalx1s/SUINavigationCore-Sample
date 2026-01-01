@@ -12,7 +12,7 @@ This is a small iOS app demonstrating usage of the `SUINavigationFusion` library
   - title/subtitle via `String` and `Text`
   - leading/trailing items (primary + secondary)
   - principal view (custom center content)
-  - tint precedence (configuration tint vs environment tint)
+  - stack-wide tint via `TopNavigationBarConfiguration.tintColor`
   - visibility controls (`topNavigationBarVisibility`)
   - hiding the back button (`topNavigationBarHidesBackButton`)
 - Scroll-dependent background opacity using `PositionObservingViewPreferenceKey`

@@ -170,14 +170,10 @@ private struct PlaygroundTab: View {
     @State private var state = NavBarPlaygroundState()
 
     var body: some View {
-        let environmentTint = state.environmentTintStyle.color
-
         NavigationShell(navigator: navigator, configuration: state.configuration) {
             NavBarPlaygroundScreen(state: $state)
         }
-        .applyIf(environmentTint != nil) { view in
-            view.tint(environmentTint!)
-        }
+        .tint(state.environmentTintStyle.color ?? .accentColor)
     }
 }
 
@@ -379,6 +375,17 @@ private struct PlaygroundPreviewScreen: View {
             case .purple: .purple
             }
         }
+
+        var topNavigationBarTint: TopNavigationBarTint {
+            switch self {
+            case .automatic:
+                .automatic
+            case .inherit:
+                .inherit
+            default:
+                .color(forcedTint ?? .accentColor)
+            }
+        }
     }
 
     var body: some View {
@@ -460,12 +467,7 @@ private struct PlaygroundPreviewScreen: View {
             }
             .buttonStyle(.plain)
         }
-        .applyIf(barTintOverride == .inherit) { view in
-            view.topNavigationBarTintColor(nil)
-        }
-        .applyIf(barTintOverride.forcedTint != nil) { view in
-            view.topNavigationBarTintColor(barTintOverride.forcedTint!)
-        }
+        .topNavigationBarTint(barTintOverride.topNavigationBarTint)
     }
 }
 
@@ -504,9 +506,7 @@ private struct BasicTitlesDemoScreen: View {
             .padding(.bottom, 24)
         }
         .topNavigationBarTitle("String Title")
-        .applyIf(showsSubtitle) { view in
-            view.topNavigationBarSubtitle("Uses configuration styling")
-        }
+        .topNavigationBarSubtitle(showsSubtitle ? "Uses configuration styling" : nil)
         .topNavigationBarTrailingPrimary(id: "toggleSubtitle", updateKey: showsSubtitle) {
             Button {
                 showsSubtitle.toggle()
@@ -1446,17 +1446,6 @@ private struct BulletList: View {
                         .foregroundStyle(.secondary)
                 }
             }
-        }
-    }
-}
-
-private extension View {
-    @ViewBuilder
-    func applyIf<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
-        if condition {
-            transform(self)
-        } else {
-            self
         }
     }
 }

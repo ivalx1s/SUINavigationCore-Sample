@@ -173,7 +173,7 @@ private struct PlaygroundTab: View {
         NavigationShell(navigator: navigator, configuration: state.configuration) {
             NavBarPlaygroundScreen(state: $state)
         }
-        .tint(state.environmentTintStyle.color ?? .accentColor)
+        //.tint(state.environmentTintStyle.color ?? .accentColor)
     }
 }
 
@@ -354,11 +354,11 @@ private struct PlaygroundPreviewScreen: View {
                             }
                         }
 
-                        Text("This sets SwiftUI `.tint(...)` above `NavigationShell`, so it affects the entire stack when configuration tint is `nil`.")
+                        Text("This sets SwiftUI `.tint(...)` above `NavigationShell`. It’s used when configuration tint is `nil`.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
 
-                        Text("Tint affects bar items (back button, leading/trailing content). Background is configured separately via `TopNavigationBarConfiguration`.")
+                        Text("Tint affects standard controls (Buttons, Links, Toggles, etc.) and top bar items. Background is configured separately via `TopNavigationBarConfiguration`.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
@@ -372,7 +372,7 @@ private struct PlaygroundPreviewScreen: View {
                             }
                         }
 
-                        Text("This updates `TopNavigationBarConfiguration.tintColor` and applies to all screens in this shell.")
+                        Text("This updates `TopNavigationBarConfiguration.tintColor` and behaves like a SwiftUI `.tint(...)` for the whole navigation stack.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }

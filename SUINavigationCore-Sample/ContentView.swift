@@ -10,6 +10,23 @@ struct SUINavigationFusionSampleApp: App {
     }
 }
 
+// MARK: - Restoration (Catalog)
+
+private enum CatalogRoute: NavigationRoute {
+    case basicTitles
+    case styledTitles
+    case barItems
+    case shareConfirmation
+    case principalView
+    case visibility
+    case updateKey
+    case navigationActions(level: Int)
+    case disableBackGesture
+    case scrollOpacity
+    case about
+    case compose
+}
+
 @MainActor
 private struct SampleTabs: View {
     var body: some View {
@@ -26,9 +43,39 @@ private struct SampleTabs: View {
 
 private struct CatalogTab: View {
     var body: some View {
-        NavigationShell(configuration: .defaultMaterial) { _ in
-            CatalogRootScreen()
-        }
+        RestorableNavigationShell<CatalogRoute>(
+            id: "catalog",
+            configuration: .defaultMaterial,
+            root: { _ in CatalogRootScreen() },
+            destination: { route in
+                switch route {
+                case .basicTitles:
+                    BasicTitlesDemoScreen()
+                case .styledTitles:
+                    StyledTitlesDemoScreen()
+                case .barItems:
+                    BarItemsDemoScreen()
+                case .shareConfirmation:
+                    ShareConfirmationScreen()
+                case .principalView:
+                    PrincipalViewDemoScreen()
+                case .visibility:
+                    VisibilityDemoScreen()
+                case .updateKey:
+                    UpdateKeyDemoScreen()
+                case .navigationActions(let level):
+                    NavigationActionsDemoScreen(level: level)
+                case .disableBackGesture:
+                    DisableBackGestureDemoScreen()
+                case .scrollOpacity:
+                    ScrollOpacityDemoScreen()
+                case .about:
+                    AboutScreen()
+                case .compose:
+                    ComposeScreen()
+                }
+            }
+        )
     }
 }
 
@@ -48,14 +95,14 @@ private struct CatalogRootScreen: View {
                         title: "Title & subtitle (String)",
                         subtitle: "Default fonts/colors from configuration"
                     ) {
-                        navigator.push(BasicTitlesDemoScreen())
+                        navigator.push(route: CatalogRoute.basicTitles)
                     }
 
                     DemoRow(
                         title: "Title & subtitle (Text)",
                         subtitle: "Text modifiers override configuration"
                     ) {
-                        navigator.push(StyledTitlesDemoScreen())
+                        navigator.push(route: CatalogRoute.styledTitles)
                     }
                 }
 
@@ -64,21 +111,21 @@ private struct CatalogRootScreen: View {
                         title: "Leading / trailing items",
                         subtitle: "Primary + secondary actions"
                     ) {
-                        navigator.push(BarItemsDemoScreen())
+                        navigator.push(route: CatalogRoute.barItems)
                     }
 
                     DemoRow(
                         title: "Principal view",
                         subtitle: "Replace title/subtitle with custom center content"
                     ) {
-                        navigator.push(PrincipalViewDemoScreen())
+                        navigator.push(route: CatalogRoute.principalView)
                     }
 
                     DemoRow(
                         title: "Visibility controls",
                         subtitle: "Hide/show sections and positions"
                     ) {
-                        navigator.push(VisibilityDemoScreen())
+                        navigator.push(route: CatalogRoute.visibility)
                     }
                 }
 
@@ -87,7 +134,7 @@ private struct CatalogRootScreen: View {
                         title: "Updating nav-bar content",
                         subtitle: "Use stable `id` + `updateKey` to refresh"
                     ) {
-                        navigator.push(UpdateKeyDemoScreen())
+                        navigator.push(route: CatalogRoute.updateKey)
                     }
                 }
 
@@ -96,14 +143,14 @@ private struct CatalogRootScreen: View {
                         title: "Push / pop / popToRoot / pop(levels:)",
                         subtitle: "Includes animated + non-animated pops"
                     ) {
-                        navigator.push(NavigationActionsDemoScreen(level: 1))
+                        navigator.push(route: CatalogRoute.navigationActions(level: 1))
                     }
 
                     DemoRow(
                         title: "Disable interactive back swipe",
                         subtitle: "Per-screen `disableBackGesture`"
                     ) {
-                        navigator.push(DisableBackGestureDemoScreen(), disableBackGesture: true)
+                        navigator.push(route: CatalogRoute.disableBackGesture, disableBackGesture: true)
                     }
                 }
 
@@ -112,7 +159,7 @@ private struct CatalogRootScreen: View {
                         title: "Scroll-dependent bar background",
                         subtitle: "Using PositionObservingViewPreferenceKey"
                     ) {
-                        navigator.push(ScrollOpacityDemoScreen())
+                        navigator.push(route: CatalogRoute.scrollOpacity)
                     }
                 }
 
@@ -121,7 +168,7 @@ private struct CatalogRootScreen: View {
                         title: "What this sample covers",
                         subtitle: "Quick notes about design + gotchas"
                     ) {
-                        navigator.push(AboutScreen())
+                        navigator.push(route: CatalogRoute.about)
                     }
                 }
             }
@@ -131,7 +178,7 @@ private struct CatalogRootScreen: View {
         .topNavigationBarSubtitle("SUINavigationFusion")
         .topNavigationBarLeading(id: "about") {
             Button {
-                navigator.push(AboutScreen())
+                navigator.push(route: CatalogRoute.about)
             } label: {
                 Image(systemName: "info.circle")
                     .font(.title3)
@@ -141,7 +188,7 @@ private struct CatalogRootScreen: View {
         }
         .topNavigationBarTrailing(id: "principal", position: .secondary) {
             Button {
-                navigator.push(PrincipalViewDemoScreen())
+                navigator.push(route: CatalogRoute.principalView)
             } label: {
                 Image(systemName: "rectangle.3.group")
                     .font(.title3)
@@ -151,7 +198,7 @@ private struct CatalogRootScreen: View {
         }
         .topNavigationBarTrailingPrimary(id: "compose") {
             Button {
-                navigator.push(ComposeScreen(), disableBackGesture: true)
+                navigator.push(route: CatalogRoute.compose, disableBackGesture: true)
             } label: {
                 Image(systemName: "square.and.pencil")
                     .font(.title3)
@@ -416,7 +463,7 @@ private struct BasicTitlesDemoScreen: View {
                 Toggle("Show subtitle", isOn: $showsSubtitle)
 
                 Button {
-                    navigator.push(BasicTitlesDemoScreen())
+                    navigator.push(route: CatalogRoute.basicTitles)
                 } label: {
                     Label("Push another copy", systemImage: "square.stack.3d.up")
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -531,7 +578,7 @@ private struct BarItemsDemoScreen: View {
                 Toggle("Muted (updates leading icon)", isOn: $isMuted)
 
                 Button {
-                    navigator.push(BarItemsDemoScreen())
+                    navigator.push(route: CatalogRoute.barItems)
                 } label: {
                     Label("Push another copy", systemImage: "square.stack.3d.up")
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -563,7 +610,7 @@ private struct BarItemsDemoScreen: View {
         }
         .topNavigationBarTrailing(id: "share", position: .secondary) {
             Button {
-                navigator.push(ShareConfirmationScreen())
+                navigator.push(route: CatalogRoute.shareConfirmation)
             } label: {
                 Image(systemName: "square.and.arrow.up")
                     .font(.title3)
@@ -832,7 +879,7 @@ private struct NavigationActionsDemoScreen: View {
 
                 Button {
                     navigator.push(
-                        NavigationActionsDemoScreen(level: level + 1),
+                        route: CatalogRoute.navigationActions(level: level + 1),
                         animated: true,
                         disableBackGesture: disableBackGestureForNextPush
                     )
@@ -844,7 +891,7 @@ private struct NavigationActionsDemoScreen: View {
 
                 Button {
                     navigator.push(
-                        NavigationActionsDemoScreen(level: level + 1),
+                        route: CatalogRoute.navigationActions(level: level + 1),
                         animated: false,
                         disableBackGesture: disableBackGestureForNextPush
                     )
@@ -899,7 +946,7 @@ private struct NavigationActionsDemoScreen: View {
         .topNavigationBarTrailingPrimary(id: "pushAgain", updateKey: disableBackGestureForNextPush) {
             Button {
                 navigator.push(
-                    NavigationActionsDemoScreen(level: level + 1),
+                    route: CatalogRoute.navigationActions(level: level + 1),
                     animated: true,
                     disableBackGesture: disableBackGestureForNextPush
                 )
@@ -1020,13 +1067,17 @@ private struct AboutScreen: View {
                     "All buttons are functional (no placeholder actions).",
                     "Demonstrate update edge cases for bar items (`id` + `updateKey`).",
                     "Demonstrate scroll-dependent background using PositionObservingViewPreferenceKey.",
-                    "Demonstrate stack-wide tint via `TopNavigationBarConfiguration.tintColor`."
+                    "Demonstrate stack-wide tint via `TopNavigationBarConfiguration.tintColor`.",
+                    "Demonstrate navigation stack restoration via `RestorableNavigationShell` + `navigator.push(route:)`."
                 ])
 
                 Text("Notes")
                     .font(.headline)
 
                 Text("The scroll hook preference key is intentionally written by a single dedicated scroll wrapper per screen. If you add multiple emitters in the same subtree, define merge semantics in the preference key reduce.")
+                    .foregroundStyle(.secondary)
+
+                Text("The Catalog tab is hosted by RestorableNavigationShell. Push a few screens, terminate the app, and relaunch to verify the stack is restored.")
                     .foregroundStyle(.secondary)
 
                 Spacer(minLength: 24)

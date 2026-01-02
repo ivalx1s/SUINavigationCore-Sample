@@ -27,6 +27,181 @@ private enum CatalogRoute: NavigationRoute {
     case compose
 }
 
+// Treat routes as persisted schema.
+// If you change case names/associated values in a shipped app, keep decoding for older payloads.
+extension CatalogRoute: Codable {
+    private static let schemaVersion = 1
+
+    private enum CodingKeys: String, CodingKey {
+        case schemaVersion
+        case kind
+        case level
+    }
+
+    private enum Kind: String, Codable {
+        case basicTitles
+        case styledTitles
+        case barItems
+        case shareConfirmation
+        case principalView
+        case visibility
+        case updateKey
+        case navigationActions
+        case disableBackGesture
+        case scrollOpacity
+        case about
+        case compose
+    }
+
+    init(from decoder: Decoder) throws {
+        // New, versioned format.
+        if
+            let container = try? decoder.container(keyedBy: CodingKeys.self),
+            let version = try? container.decode(Int.self, forKey: .schemaVersion)
+        {
+            guard version == Self.schemaVersion else {
+                throw DecodingError.dataCorruptedError(
+                    forKey: .schemaVersion,
+                    in: container,
+                    debugDescription: "Unsupported CatalogRoute schemaVersion: \(version)"
+                )
+            }
+
+            let kind = try container.decode(Kind.self, forKey: .kind)
+            switch kind {
+            case .basicTitles:
+                self = .basicTitles
+            case .styledTitles:
+                self = .styledTitles
+            case .barItems:
+                self = .barItems
+            case .shareConfirmation:
+                self = .shareConfirmation
+            case .principalView:
+                self = .principalView
+            case .visibility:
+                self = .visibility
+            case .updateKey:
+                self = .updateKey
+            case .navigationActions:
+                self = .navigationActions(level: try container.decode(Int.self, forKey: .level))
+            case .disableBackGesture:
+                self = .disableBackGesture
+            case .scrollOpacity:
+                self = .scrollOpacity
+            case .about:
+                self = .about
+            case .compose:
+                self = .compose
+            }
+
+            return
+        }
+
+        // Backward-compatibility: decode the old synthesized enum representation
+        // (e.g. `{"basicTitles":{}}` or `{"navigationActions":{"level":1}}`).
+        let container = try decoder.container(keyedBy: AnyCodingKey.self)
+        guard let key = container.allKeys.first else {
+            throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "Empty CatalogRoute payload"))
+        }
+
+        switch key.stringValue {
+        case "basicTitles":
+            self = .basicTitles
+        case "styledTitles":
+            self = .styledTitles
+        case "barItems":
+            self = .barItems
+        case "shareConfirmation":
+            self = .shareConfirmation
+        case "principalView":
+            self = .principalView
+        case "visibility":
+            self = .visibility
+        case "updateKey":
+            self = .updateKey
+        case "navigationActions":
+            let nested = try container.nestedContainer(keyedBy: AnyCodingKey.self, forKey: key)
+            self = .navigationActions(level: try nested.decode(Int.self, forKey: AnyCodingKey("level")))
+        case "disableBackGesture":
+            self = .disableBackGesture
+        case "scrollOpacity":
+            self = .scrollOpacity
+        case "about":
+            self = .about
+        case "compose":
+            self = .compose
+        default:
+            throw DecodingError.dataCorruptedError(forKey: key, in: container, debugDescription: "Unknown CatalogRoute case: \(key.stringValue)")
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(Self.schemaVersion, forKey: .schemaVersion)
+
+        switch self {
+        case .basicTitles:
+            try container.encode(Kind.basicTitles, forKey: .kind)
+        case .styledTitles:
+            try container.encode(Kind.styledTitles, forKey: .kind)
+        case .barItems:
+            try container.encode(Kind.barItems, forKey: .kind)
+        case .shareConfirmation:
+            try container.encode(Kind.shareConfirmation, forKey: .kind)
+        case .principalView:
+            try container.encode(Kind.principalView, forKey: .kind)
+        case .visibility:
+            try container.encode(Kind.visibility, forKey: .kind)
+        case .updateKey:
+            try container.encode(Kind.updateKey, forKey: .kind)
+        case .navigationActions(let level):
+            try container.encode(Kind.navigationActions, forKey: .kind)
+            try container.encode(level, forKey: .level)
+        case .disableBackGesture:
+            try container.encode(Kind.disableBackGesture, forKey: .kind)
+        case .scrollOpacity:
+            try container.encode(Kind.scrollOpacity, forKey: .kind)
+        case .about:
+            try container.encode(Kind.about, forKey: .kind)
+        case .compose:
+            try container.encode(Kind.compose, forKey: .kind)
+        }
+    }
+}
+
+private enum CatalogRestoration {
+    static let stackIDBase = "catalog"
+    static let routeKey: NavigationDestinationKey = "com.suinavigationfusion.sample.catalogRoute"
+    static let routeKeyAliases: [NavigationDestinationKey] = [.type(CatalogRoute.self)]
+
+    static let encoder: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        return encoder
+    }()
+
+    static let decoder = JSONDecoder()
+}
+
+private struct AnyCodingKey: CodingKey {
+    let stringValue: String
+    let intValue: Int?
+
+    init(_ string: String) {
+        self.stringValue = string
+        self.intValue = nil
+    }
+
+    init?(stringValue: String) {
+        self.init(stringValue)
+    }
+
+    init?(intValue: Int) {
+        return nil
+    }
+}
+
 @MainActor
 private struct SampleTabs: View {
     var body: some View {
@@ -42,10 +217,16 @@ private struct SampleTabs: View {
 // MARK: - Catalog (feature coverage)
 
 private struct CatalogTab: View {
+    @SceneStorage("suinavigation.sample.catalog.sceneID") private var sceneID = UUID().uuidString
+
     var body: some View {
         RestorableNavigationShell<CatalogRoute>(
-            id: "catalog",
+            id: "\(CatalogRestoration.stackIDBase).\(sceneID)",
             configuration: .defaultMaterial,
+            encoder: CatalogRestoration.encoder,
+            decoder: CatalogRestoration.decoder,
+            key: CatalogRestoration.routeKey,
+            aliases: CatalogRestoration.routeKeyAliases,
             root: { _ in CatalogRootScreen() },
             destination: { route in
                 switch route {

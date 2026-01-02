@@ -217,11 +217,10 @@ private struct SampleTabs: View {
 // MARK: - Catalog (feature coverage)
 
 private struct CatalogTab: View {
-    @SceneStorage("suinavigation.sample.catalog.sceneID") private var sceneID = UUID().uuidString
-
     var body: some View {
         RestorableNavigationShell<CatalogRoute>(
-            id: "\(CatalogRestoration.stackIDBase).\(sceneID)",
+            id: CatalogRestoration.stackIDBase,
+            idScope: .scene,
             configuration: .defaultMaterial,
             encoder: CatalogRestoration.encoder,
             decoder: CatalogRestoration.decoder,

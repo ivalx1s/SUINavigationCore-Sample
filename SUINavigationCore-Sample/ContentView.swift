@@ -338,10 +338,24 @@ private struct CatalogRootScreen: View {
 
                 DemoSection(title: "Feature Modules") {
                     DemoRow(
-                        title: "Thread screen (separate module)",
-                        subtitle: "Route + screen defined in ThreadsFeature"
+                        title: "Threads inbox (feature enum router)",
+                        subtitle: "Route enum + `switch` destination in ThreadsFeature"
                     ) {
-                        navigator.push(route: ThreadRoute(id: "123"))
+                        navigator.push(route: ThreadsRoute.inbox)
+                    }
+
+                    DemoRow(
+                        title: "Thread details (feature per-screen route type)",
+                        subtitle: "Dedicated payload type + per-screen destination key"
+                    ) {
+                        navigator.push(route: ThreadDetailsRoute(id: "123"))
+                    }
+
+                    DemoRow(
+                        title: "Composer (feature split enum route)",
+                        subtitle: "Separate enum for a sub-flow"
+                    ) {
+                        navigator.push(route: ThreadsComposerRoute.compose(draftID: "draft-123"))
                     }
                 }
 

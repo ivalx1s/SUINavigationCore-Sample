@@ -24,6 +24,8 @@ private enum CatalogRoute: NavigationPathItem {
     case navigationActions(level: Int)
     case disableBackGesture
     case scrollOpacity
+    case zoomGrid
+    case zoomDetail(id: Int)
     case about
     case compose
 
@@ -39,6 +41,7 @@ extension CatalogRoute: Codable {
         case schemaVersion
         case kind
         case level
+        case zoomID
     }
 
     private enum Kind: String, Codable {
@@ -52,6 +55,8 @@ extension CatalogRoute: Codable {
         case navigationActions
         case disableBackGesture
         case scrollOpacity
+        case zoomGrid
+        case zoomDetail
         case about
         case compose
     }
@@ -92,6 +97,10 @@ extension CatalogRoute: Codable {
                 self = .disableBackGesture
             case .scrollOpacity:
                 self = .scrollOpacity
+            case .zoomGrid:
+                self = .zoomGrid
+            case .zoomDetail:
+                self = .zoomDetail(id: try container.decode(Int.self, forKey: .zoomID))
             case .about:
                 self = .about
             case .compose:
@@ -130,6 +139,11 @@ extension CatalogRoute: Codable {
             self = .disableBackGesture
         case "scrollOpacity":
             self = .scrollOpacity
+        case "zoomGrid":
+            self = .zoomGrid
+        case "zoomDetail":
+            let nested = try container.nestedContainer(keyedBy: AnyCodingKey.self, forKey: key)
+            self = .zoomDetail(id: try nested.decode(Int.self, forKey: AnyCodingKey("id")))
         case "about":
             self = .about
         case "compose":
@@ -165,6 +179,11 @@ extension CatalogRoute: Codable {
             try container.encode(Kind.disableBackGesture, forKey: .kind)
         case .scrollOpacity:
             try container.encode(Kind.scrollOpacity, forKey: .kind)
+        case .zoomGrid:
+            try container.encode(Kind.zoomGrid, forKey: .kind)
+        case .zoomDetail(let id):
+            try container.encode(Kind.zoomDetail, forKey: .kind)
+            try container.encode(id, forKey: .zoomID)
         case .about:
             try container.encode(Kind.about, forKey: .kind)
         case .compose:
@@ -291,6 +310,10 @@ private struct CatalogTab: View {
                         DisableBackGestureDemoScreen()
                     case .scrollOpacity:
                         ScrollOpacityDemoScreen()
+                    case .zoomGrid:
+                        ZoomGridDemoScreen()
+                    case .zoomDetail(let id):
+                        ZoomDetailDemoScreen(id: id)
                     case .about:
                         AboutScreen()
                     case .compose:
@@ -407,6 +430,15 @@ private struct CatalogRootScreen: View {
                         subtitle: "Per-screen `disableBackGesture`"
                     ) {
                         navigator.push(route: CatalogRoute.disableBackGesture, disableBackGesture: true)
+                    }
+                }
+
+                DemoSection(title: "Transitions") {
+                    DemoRow(
+                        title: "Native zoom transition (iOS 18+)",
+                        subtitle: "UIKit preferredTransition + zoom anchors"
+                    ) {
+                        navigator.push(route: CatalogRoute.zoomGrid)
                     }
                 }
 
@@ -1292,6 +1324,129 @@ private struct ScrollOpacityDemoScreen: View {
     }
 }
 
+private struct ZoomGridDemoScreen: View {
+    @EnvironmentObject private var navigator: Navigator
+    @State private var disableBackGestureForDetail = false
+    @State private var disableZoomInteractiveDismiss = false
+
+    private let items = Array(0..<30)
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Native zoom transitions are available on iOS 18+. Mark a thumbnail as a zoom source and (optionally) mark a hero view as a zoom destination.")
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+
+                Toggle("Disable back swipe on detail", isOn: $disableBackGestureForDetail)
+                    .padding(.horizontal, 16)
+
+                Toggle("Disable zoom interactive dismiss", isOn: $disableZoomInteractiveDismiss)
+                    .padding(.horizontal, 16)
+
+                LazyVGrid(
+                    columns: [GridItem(.adaptive(minimum: 110), spacing: 12)],
+                    spacing: 12
+                ) {
+                    ForEach(items, id: \.self) { id in
+                        Button {
+                            navigator.push(
+                                route: CatalogRoute.zoomDetail(id: id),
+                                animated: true,
+                                disableBackGesture: disableBackGestureForDetail,
+                                transition: .zoom(
+                                    id: id,
+                                    interactiveDismiss: disableZoomInteractiveDismiss ? .disabled : .systemDefault
+                                )
+                            )
+                        } label: {
+                            ZoomTile(id: id)
+                                .suinavZoomSource(id: id)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Open item \(id)")
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 24)
+            }
+        }
+        .topNavigationBarTitle("Zoom")
+        .topNavigationBarSubtitle("iOS 18+ native transition")
+    }
+}
+
+private struct ZoomDetailDemoScreen: View {
+    let id: Int
+
+    var body: some View {
+        OffsetObservingScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                ZoomTile(id: id, cornerRadius: 22)
+                    .suinavZoomDestination(id: id)
+                    .padding(.top, 12)
+
+                Text("Pop back to the grid to see the reverse zoom. For best results, the source tile should still be visible in the grid.")
+                    .foregroundStyle(.secondary)
+
+                ForEach(0..<12) { idx in
+                    Text("Detail row \(idx + 1)")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 12)
+                        .background(RoundedRectangle(cornerRadius: 12).fill(Color(uiColor: .secondarySystemBackground)))
+                }
+
+                Spacer(minLength: 24)
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 24)
+        }
+        .topNavigationBarTitle("Item \(id)")
+        .topNavigationBarSubtitle("Zoom destination")
+    }
+}
+
+private struct ZoomTile: View {
+    let id: Int
+    var cornerRadius: CGFloat = 18
+
+    var body: some View {
+        let color = Color(
+            hue: Double(id % 30) / 30.0,
+            saturation: 0.78,
+            brightness: 0.92
+        )
+
+        ZStack(alignment: .bottomLeading) {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            color,
+                            color.opacity(0.65)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+
+            Text("#\(id)")
+                .font(.title2.weight(.bold))
+                .foregroundStyle(.white)
+                .padding(14)
+                .shadow(radius: 8)
+        }
+        .aspectRatio(1, contentMode: .fit)
+        .overlay(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .stroke(Color.white.opacity(0.18), lineWidth: 1)
+        )
+    }
+}
+
 private struct ComposeScreen: View {
     @EnvironmentObject private var navigator: Navigator
     @State private var text = ""
@@ -1347,6 +1502,7 @@ private struct AboutScreen: View {
                     "Demonstrate update edge cases for bar items (`id` + `updateKey`).",
                     "Demonstrate scroll-dependent background using PositionObservingViewPreferenceKey.",
                     "Demonstrate stack-wide tint via `TopNavigationBarConfiguration.tintColor`.",
+                    "Demonstrate iOS 18+ native zoom transitions (UIKit preferredTransition + zoom anchors).",
                     "Demonstrate navigation stack restoration via `RestorableNavigationShell` + `navigator.push(route:)`."
                 ])
 

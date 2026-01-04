@@ -9,14 +9,6 @@ import SUINavigationFusion
 /// Note: `NavigationDestinations` is not `Sendable`, so expose static bundles from a `@MainActor` context.
 @MainActor
 public enum ThreadsFeatureNavigation {
-    // Stable keys persisted in snapshots. Prefer explicit, namespaced strings.
-    private static let threadsRouteKey: NavigationDestinationKey = "com.suinavigation.sample.threads.route"
-    private static let inboxKey: NavigationDestinationKey = "com.suinavigation.sample.threads.inbox"
-    private static let threadDetailsKey: NavigationDestinationKey = "com.suinavigation.sample.threads.thread"
-    private static let composeKey: NavigationDestinationKey = "com.suinavigation.sample.threads.compose"
-    private static let settingsKey: NavigationDestinationKey = "com.suinavigation.sample.threads.settings"
-    private static let composerRouteKey: NavigationDestinationKey = "com.suinavigation.sample.threads.composerRoute"
-
     /// Registers all destinations owned by this feature module.
     ///
     /// This includes:
@@ -25,26 +17,26 @@ public enum ThreadsFeatureNavigation {
     /// - a split router enum (`ThreadsComposerRoute`)
     public static let destinations = NavigationDestinations { registry in
         // Option 3: module-scoped enum route.
-        registry.register(ThreadsRoute.self, key: threadsRouteKey) { route in
+        registry.register(ThreadsRoute.self) { route in
             destination(for: route)
         }
 
         // Option 4: per-screen route payload types (unique keys per screen).
-        registry.register(ThreadsInboxRoute.self, key: inboxKey) { _ in
+        registry.register(ThreadsInboxRoute.self) { _ in
             ThreadsInboxScreen(source: .perScreenRoute)
         }
-        registry.register(ThreadDetailsRoute.self, key: threadDetailsKey) { route in
+        registry.register(ThreadDetailsRoute.self) { route in
             ThreadDetailsScreen(id: route.id)
         }
-        registry.register(ThreadComposeRoute.self, key: composeKey) { route in
+        registry.register(ThreadComposeRoute.self) { route in
             ThreadComposeScreen(draftID: route.draftID, source: .perScreenRoute)
         }
-        registry.register(ThreadsSettingsRoute.self, key: settingsKey) { _ in
+        registry.register(ThreadsSettingsRoute.self) { _ in
             ThreadsSettingsScreen()
         }
 
         // Split router enum: demonstrates multiple enums owned by one feature module.
-        registry.register(ThreadsComposerRoute.self, key: composerRouteKey) { route in
+        registry.register(ThreadsComposerRoute.self) { route in
             destination(for: route)
         }
     }
@@ -75,4 +67,3 @@ public enum ThreadsFeatureNavigation {
         }
     }
 }
-

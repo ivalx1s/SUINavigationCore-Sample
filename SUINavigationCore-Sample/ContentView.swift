@@ -13,7 +13,7 @@ struct SUINavigationFusionSampleApp: App {
 
 // MARK: - Restoration (Catalog)
 
-private enum CatalogRoute: NavigationRoute {
+private enum CatalogRoute: NavigationPathItem {
     case basicTitles
     case styledTitles
     case barItems
@@ -26,6 +26,8 @@ private enum CatalogRoute: NavigationRoute {
     case scrollOpacity
     case about
     case compose
+
+    static var destinationKey: NavigationDestinationKey { CatalogRestoration.routeKey }
 }
 
 // Treat routes as persisted schema.
@@ -185,6 +187,40 @@ private enum CatalogRestoration {
     static let decoder = JSONDecoder()
 }
 
+@MainActor
+private final class CatalogPathRouter: ObservableObject {
+    @Published var path = SUINavigationPath()
+
+    private let encoder: JSONEncoder
+
+    init(encoder: JSONEncoder) {
+        self.encoder = encoder
+    }
+
+    func pop() {
+        path.removeLast(1)
+    }
+
+    func popToRoot() {
+        path.clear()
+    }
+
+    /// Demonstrates external, heterogeneous path control:
+    /// - pushes a catalog screen (Option 3 enum route)
+    /// - then pushes a Threads feature screen (feature-owned route type)
+    func deepLinkToThread(id: String) {
+        var newPath = SUINavigationPath()
+        do {
+            try newPath.append(route: CatalogRoute.about, encoder: encoder)
+            try newPath.append(route: ThreadsRoute.thread(id: id), encoder: encoder)
+        } catch {
+            assertionFailure("Failed to build deep link path: \(error)")
+            newPath.clear()
+        }
+        path = newPath
+    }
+}
+
 private struct AnyCodingKey: CodingKey {
     let stringValue: String
     let intValue: Int?
@@ -218,45 +254,83 @@ private struct SampleTabs: View {
 // MARK: - Catalog (feature coverage)
 
 private struct CatalogTab: View {
+    @StateObject private var router = CatalogPathRouter(encoder: CatalogRestoration.encoder)
+
     var body: some View {
-        RestorableNavigationShell<CatalogRoute>(
-            id: CatalogRestoration.stackIDBase,
-            idScope: .scene,
-            configuration: .defaultMaterial,
-            encoder: CatalogRestoration.encoder,
-            decoder: CatalogRestoration.decoder,
-            key: CatalogRestoration.routeKey,
-            aliases: CatalogRestoration.routeKeyAliases,
-            additionalDestinations: ThreadsFeatureNavigation.destinations,
-            root: { _ in CatalogRootScreen() },
-            destination: { route in
-                switch route {
-                case .basicTitles:
-                    BasicTitlesDemoScreen()
-                case .styledTitles:
-                    StyledTitlesDemoScreen()
-                case .barItems:
-                    BarItemsDemoScreen()
-                case .shareConfirmation:
-                    ShareConfirmationScreen()
-                case .principalView:
-                    PrincipalViewDemoScreen()
-                case .visibility:
-                    VisibilityDemoScreen()
-                case .updateKey:
-                    UpdateKeyDemoScreen()
-                case .navigationActions(let level):
-                    NavigationActionsDemoScreen(level: level)
-                case .disableBackGesture:
-                    DisableBackGestureDemoScreen()
-                case .scrollOpacity:
-                    ScrollOpacityDemoScreen()
-                case .about:
-                    AboutScreen()
-                case .compose:
-                    ComposeScreen()
+        ZStack(alignment: .bottom) {
+            RestorableNavigationShell<CatalogRoute>(
+                id: CatalogRestoration.stackIDBase,
+                idScope: .scene,
+                path: $router.path,
+                configuration: .defaultMaterial,
+                encoder: CatalogRestoration.encoder,
+                decoder: CatalogRestoration.decoder,
+                key: CatalogRestoration.routeKey,
+                aliases: CatalogRestoration.routeKeyAliases,
+                additionalDestinations: ThreadsFeatureNavigation.destinations,
+                root: { _ in CatalogRootScreen() },
+                destination: { route in
+                    switch route {
+                    case .basicTitles:
+                        BasicTitlesDemoScreen()
+                    case .styledTitles:
+                        StyledTitlesDemoScreen()
+                    case .barItems:
+                        BarItemsDemoScreen()
+                    case .shareConfirmation:
+                        ShareConfirmationScreen()
+                    case .principalView:
+                        PrincipalViewDemoScreen()
+                    case .visibility:
+                        VisibilityDemoScreen()
+                    case .updateKey:
+                        UpdateKeyDemoScreen()
+                    case .navigationActions(let level):
+                        NavigationActionsDemoScreen(level: level)
+                    case .disableBackGesture:
+                        DisableBackGestureDemoScreen()
+                    case .scrollOpacity:
+                        ScrollOpacityDemoScreen()
+                    case .about:
+                        AboutScreen()
+                    case .compose:
+                        ComposeScreen()
+                    }
                 }
+            )
+
+            CatalogPathOverlay(router: router)
+                .padding(.horizontal, 12)
+                .padding(.bottom, 10)
+        }
+    }
+}
+
+private struct CatalogPathOverlay: View {
+    @ObservedObject var router: CatalogPathRouter
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Path depth: \(router.path.elements.count)")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 10) {
+                Button("Deep link") { router.deepLinkToThread(id: "123") }
+                    .buttonStyle(.borderedProminent)
+
+                Button("Back") { router.pop() }
+                    .buttonStyle(.bordered)
+
+                Button("Root") { router.popToRoot() }
+                    .buttonStyle(.bordered)
             }
+        }
+        .padding(12)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color(.separator).opacity(0.3), lineWidth: 1)
         )
     }
 }

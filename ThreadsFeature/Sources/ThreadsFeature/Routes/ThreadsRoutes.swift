@@ -8,11 +8,13 @@ import SUINavigationFusion
 ///
 /// This is ergonomic (similar to SwiftUI's `NavigationStack` + `navigationDestination(for:)`) and keeps routing logic
 /// encapsulated inside the feature module.
-public enum ThreadsRoute: NavigationRoute {
+public enum ThreadsRoute: NavigationPathItem {
     case inbox
     case thread(id: String)
     case compose(ComposeContext)
     case settings
+
+    public static let destinationKey: NavigationDestinationKey = "com.suinavigation.sample.threads.route"
 
     /// Nested payload used by a route case to demonstrate "route composition".
     public struct ComposeContext: Codable, Hashable, Sendable {
@@ -29,12 +31,14 @@ public enum ThreadsRoute: NavigationRoute {
 /// Per-screen route payload type.
 ///
 /// Registering each screen as its own payload type allows using a unique destination key per screen.
-public struct ThreadsInboxRoute: NavigationRoute {
+public struct ThreadsInboxRoute: NavigationPathItem {
+    public static let destinationKey: NavigationDestinationKey = "com.suinavigation.sample.threads.inbox"
     public init() {}
 }
 
 /// Per-screen route payload type.
-public struct ThreadDetailsRoute: NavigationRoute {
+public struct ThreadDetailsRoute: NavigationPathItem {
+    public static let destinationKey: NavigationDestinationKey = "com.suinavigation.sample.threads.thread"
     public let id: String
 
     public init(id: String) {
@@ -43,7 +47,8 @@ public struct ThreadDetailsRoute: NavigationRoute {
 }
 
 /// Per-screen route payload type.
-public struct ThreadComposeRoute: NavigationRoute {
+public struct ThreadComposeRoute: NavigationPathItem {
+    public static let destinationKey: NavigationDestinationKey = "com.suinavigation.sample.threads.compose"
     public var draftID: String?
 
     public init(draftID: String? = nil) {
@@ -52,7 +57,8 @@ public struct ThreadComposeRoute: NavigationRoute {
 }
 
 /// Per-screen route payload type.
-public struct ThreadsSettingsRoute: NavigationRoute {
+public struct ThreadsSettingsRoute: NavigationPathItem {
+    public static let destinationKey: NavigationDestinationKey = "com.suinavigation.sample.threads.settings"
     public init() {}
 }
 
@@ -61,7 +67,8 @@ public struct ThreadsSettingsRoute: NavigationRoute {
 /// An example of splitting routing into multiple enums inside one feature module.
 ///
 /// You may choose this when a feature has multiple independent sub-flows, and you want each to evolve separately.
-public enum ThreadsComposerRoute: NavigationRoute {
+public enum ThreadsComposerRoute: NavigationPathItem {
     case compose(draftID: String?)
-}
 
+    public static let destinationKey: NavigationDestinationKey = "com.suinavigation.sample.threads.composerRoute"
+}

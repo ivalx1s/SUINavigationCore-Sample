@@ -7,14 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		725B8FB92F0B123F0005880F /* SUINavigationFusion in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 72FC5ABE2E58AA1B004EBFB6 /* SUINavigationFusion */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		72FC5ABF2E58AA1B004EBFB6 /* SUINavigationFusion in Frameworks */ = {isa = PBXBuildFile; productRef = 72FC5ABE2E58AA1B004EBFB6 /* SUINavigationFusion */; };
 		D244074E0738A6CEF0A1E78D /* ThreadsFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 3094EE20AE0CAB2E1E32438F /* ThreadsFeature */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		725B8FBA2F0B123F0005880F /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				725B8FB92F0B123F0005880F /* SUINavigationFusion in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		72482C122F0428A0005F6445 /* SUINavigationFusion */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SUINavigationFusion; path = ../SUINavigationFusion; sourceTree = SOURCE_ROOT; };
-		F42DF755960FF77943C8E14D /* ThreadsFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = ThreadsFeature; path = ThreadsFeature; sourceTree = SOURCE_ROOT; };
 		72FC5AAC2E58A9DB004EBFB6 /* SUINavigationCore-Sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SUINavigationCore-Sample.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F42DF755960FF77943C8E14D /* ThreadsFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = ThreadsFeature; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -66,6 +81,7 @@
 				72FC5AA82E58A9DB004EBFB6 /* Sources */,
 				72FC5AA92E58A9DB004EBFB6 /* Frameworks */,
 				72FC5AAA2E58A9DB004EBFB6 /* Resources */,
+				725B8FBA2F0B123F0005880F /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -361,15 +377,15 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		72FC5ABE2E58AA1B004EBFB6 /* SUINavigationFusion */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 72FC5ABD2E58AA1B004EBFB6 /* XCRemoteSwiftPackageReference "SUINavigationFusion" */;
-			productName = SUINavigationFusion;
-		};
 		3094EE20AE0CAB2E1E32438F /* ThreadsFeature */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 2A6BE11DF0493A8C44D25517 /* XCLocalSwiftPackageReference "ThreadsFeature" */;
 			productName = ThreadsFeature;
+		};
+		72FC5ABE2E58AA1B004EBFB6 /* SUINavigationFusion */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 72FC5ABD2E58AA1B004EBFB6 /* XCRemoteSwiftPackageReference "SUINavigationFusion" */;
+			productName = SUINavigationFusion;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

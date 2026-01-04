@@ -1,5 +1,6 @@
 import SwiftUI
 import SUINavigationFusion
+import ThreadsFeature
 
 @main
 struct SUINavigationFusionSampleApp: App {
@@ -226,6 +227,7 @@ private struct CatalogTab: View {
             decoder: CatalogRestoration.decoder,
             key: CatalogRestoration.routeKey,
             aliases: CatalogRestoration.routeKeyAliases,
+            additionalDestinations: ThreadsFeatureNavigation.destinations,
             root: { _ in CatalogRootScreen() },
             destination: { route in
                 switch route {
@@ -331,6 +333,15 @@ private struct CatalogRootScreen: View {
                         subtitle: "Per-screen `disableBackGesture`"
                     ) {
                         navigator.push(route: CatalogRoute.disableBackGesture, disableBackGesture: true)
+                    }
+                }
+
+                DemoSection(title: "Feature Modules") {
+                    DemoRow(
+                        title: "Thread screen (separate module)",
+                        subtitle: "Route + screen defined in ThreadsFeature"
+                    ) {
+                        navigator.push(route: ThreadRoute(id: "123"))
                     }
                 }
 

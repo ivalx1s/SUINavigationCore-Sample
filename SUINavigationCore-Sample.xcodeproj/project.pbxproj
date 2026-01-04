@@ -8,10 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		72FC5ABF2E58AA1B004EBFB6 /* SUINavigationFusion in Frameworks */ = {isa = PBXBuildFile; productRef = 72FC5ABE2E58AA1B004EBFB6 /* SUINavigationFusion */; };
+		D244074E0738A6CEF0A1E78D /* ThreadsFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 3094EE20AE0CAB2E1E32438F /* ThreadsFeature */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		72482C122F0428A0005F6445 /* SUINavigationFusion */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SUINavigationFusion; path = ../SUINavigationFusion; sourceTree = SOURCE_ROOT; };
+		F42DF755960FF77943C8E14D /* ThreadsFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = ThreadsFeature; path = ThreadsFeature; sourceTree = SOURCE_ROOT; };
 		72FC5AAC2E58A9DB004EBFB6 /* SUINavigationCore-Sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SUINavigationCore-Sample.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -29,6 +31,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				72FC5ABF2E58AA1B004EBFB6 /* SUINavigationFusion in Frameworks */,
+				D244074E0738A6CEF0A1E78D /* ThreadsFeature in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -41,6 +44,7 @@
 				72FC5AAE2E58A9DB004EBFB6 /* SUINavigationCore-Sample */,
 				72FC5AAD2E58A9DB004EBFB6 /* Products */,
 				72482C122F0428A0005F6445 /* SUINavigationFusion */,
+				F42DF755960FF77943C8E14D /* ThreadsFeature */,
 			);
 			sourceTree = "<group>";
 		};
@@ -73,6 +77,7 @@
 			name = "SUINavigationCore-Sample";
 			packageProductDependencies = (
 				72FC5ABE2E58AA1B004EBFB6 /* SUINavigationFusion */,
+				3094EE20AE0CAB2E1E32438F /* ThreadsFeature */,
 			);
 			productName = "SUINavigationCore-Sample";
 			productReference = 72FC5AAC2E58A9DB004EBFB6 /* SUINavigationCore-Sample.app */;
@@ -104,6 +109,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				72FC5ABD2E58AA1B004EBFB6 /* XCRemoteSwiftPackageReference "SUINavigationFusion" */,
+				2A6BE11DF0493A8C44D25517 /* XCLocalSwiftPackageReference "ThreadsFeature" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 72FC5AAD2E58A9DB004EBFB6 /* Products */;
@@ -336,6 +342,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		2A6BE11DF0493A8C44D25517 /* XCLocalSwiftPackageReference "ThreadsFeature" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ThreadsFeature;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		72FC5ABD2E58AA1B004EBFB6 /* XCRemoteSwiftPackageReference "SUINavigationFusion" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -352,6 +365,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 72FC5ABD2E58AA1B004EBFB6 /* XCRemoteSwiftPackageReference "SUINavigationFusion" */;
 			productName = SUINavigationFusion;
+		};
+		3094EE20AE0CAB2E1E32438F /* ThreadsFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2A6BE11DF0493A8C44D25517 /* XCLocalSwiftPackageReference "ThreadsFeature" */;
+			productName = ThreadsFeature;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -1546,16 +1546,39 @@ private struct ZoomGridDemoScreen: View {
 
 private struct ZoomDetailDemoScreen: View {
     let id: Int
+    @State private var currentID: Int
+
+    init(id: Int) {
+        self.id = id
+        self._currentID = State(initialValue: id)
+    }
 
     var body: some View {
         OffsetObservingScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                ZoomTile(id: id, cornerRadius: 22)
-                    .suinavZoomDestination(id: id)
+                ZoomTile(id: currentID, cornerRadius: 22)
+                    .suinavZoomDestination(id: currentID)
                     .padding(.top, 12)
 
-                Text("Pop back to the grid to see the reverse zoom. For best results, the source tile should still be visible in the grid.")
-                    .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("This screen can change its current item without leaving the view controller.")
+                        .font(.headline)
+
+                    Text("Tap Next/Prev to change the item, then dismiss. The reverse zoom should target the updated tile in the grid (see `.suinavZoomDismissTo(id:)`).")
+                        .foregroundStyle(.secondary)
+
+                    HStack(spacing: 12) {
+                        Button("Prev") {
+                            currentID = (currentID + 29) % 30
+                        }
+                        .buttonStyle(.bordered)
+
+                        Button("Next") {
+                            currentID = (currentID + 1) % 30
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                }
 
                 ForEach(0..<12) { idx in
                     Text("Detail row \(idx + 1)")
@@ -1570,8 +1593,10 @@ private struct ZoomDetailDemoScreen: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 24)
         }
-        .topNavigationBarTitle("Item \(id)")
-        .topNavigationBarSubtitle("Zoom destination")
+        // Keep the zoom dismiss target in sync with the currently displayed item.
+        .suinavZoomDismissTo(id: currentID)
+        .topNavigationBarTitle("Item \(currentID)")
+        .topNavigationBarSubtitle("Zoom destination (dynamic)")
     }
 }
 

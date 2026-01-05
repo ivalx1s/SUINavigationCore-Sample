@@ -1328,8 +1328,69 @@ private struct ZoomGridDemoScreen: View {
     @EnvironmentObject private var navigator: Navigator
     @State private var disableBackGestureForDetail = false
     @State private var disableZoomInteractiveDismiss = false
+    @State private var dismissOnlyFromHero = false
+    @State private var dismissDownwardOnly = false
+    @State private var alignment = ZoomAlignmentOption.destinationAnchor
 
     private let items = Array(0..<30)
+
+    private enum ZoomAlignmentOption: String, CaseIterable {
+        case destinationAnchor
+        case destinationAnchorInset
+        case destinationAnchorAspectFit
+        case systemDefault
+        case customSafeAreaBounds
+
+        var title: String {
+            switch self {
+            case .destinationAnchor:
+                return "Destination anchor"
+            case .destinationAnchorInset:
+                return "Destination anchor (inset)"
+            case .destinationAnchorAspectFit:
+                return "Destination anchor (aspect-fit)"
+            case .systemDefault:
+                return "System default"
+            case .customSafeAreaBounds:
+                return "Custom: safe-area bounds"
+            }
+        }
+    }
+
+    private var interactiveDismissPolicy: SUINavigationZoomInteractiveDismissPolicy {
+        if disableZoomInteractiveDismiss {
+            return .disabled
+        }
+
+        var policy: SUINavigationZoomInteractiveDismissPolicy = .systemDefault
+
+        if dismissOnlyFromHero {
+            policy = policy.and(.onlyFromDestinationAnchor())
+        }
+        if dismissDownwardOnly {
+            policy = policy.and(.downwardSwipe(minimumVelocityY: 120))
+        }
+
+        return policy
+    }
+
+    private var alignmentRectPolicy: SUINavigationZoomAlignmentRectPolicy {
+        switch alignment {
+        case .destinationAnchor:
+            return .destinationAnchor(fallback: .zoomedViewBounds)
+        case .destinationAnchorInset:
+            return .destinationAnchor(
+                inset: EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12),
+                fallback: .zoomedViewBounds
+            )
+        case .destinationAnchorAspectFit:
+            return .destinationAnchorAspectFitToSource(fallback: .zoomedViewBounds)
+        case .systemDefault:
+            return .systemDefault
+        case .customSafeAreaBounds:
+            return .custom { $0.zoomedSafeAreaBounds }
+        }
+    }
 
     var body: some View {
         ScrollView {
@@ -1345,6 +1406,22 @@ private struct ZoomGridDemoScreen: View {
                 Toggle("Disable zoom interactive dismiss", isOn: $disableZoomInteractiveDismiss)
                     .padding(.horizontal, 16)
 
+                Toggle("Dismiss only when starting from hero", isOn: $dismissOnlyFromHero)
+                    .padding(.horizontal, 16)
+                    .disabled(disableZoomInteractiveDismiss)
+
+                Toggle("Dismiss only with downward swipe", isOn: $dismissDownwardOnly)
+                    .padding(.horizontal, 16)
+                    .disabled(disableZoomInteractiveDismiss)
+
+                Picker("Alignment rect", selection: $alignment) {
+                    ForEach(ZoomAlignmentOption.allCases, id: \.self) { option in
+                        Text(option.title).tag(option)
+                    }
+                }
+                .pickerStyle(.menu)
+                .padding(.horizontal, 16)
+
                 LazyVGrid(
                     columns: [GridItem(.adaptive(minimum: 110), spacing: 12)],
                     spacing: 12
@@ -1357,7 +1434,8 @@ private struct ZoomGridDemoScreen: View {
                                 disableBackGesture: disableBackGestureForDetail,
                                 transition: .zoom(
                                     id: id,
-                                    interactiveDismiss: disableZoomInteractiveDismiss ? .disabled : .systemDefault
+                                    interactiveDismissPolicy: interactiveDismissPolicy,
+                                    alignmentRectPolicy: alignmentRectPolicy
                                 )
                             )
                         } label: {

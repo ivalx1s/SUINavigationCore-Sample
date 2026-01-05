@@ -1331,6 +1331,8 @@ private struct ZoomGridDemoScreen: View {
     @State private var dismissOnlyFromHero = false
     @State private var dismissDownwardOnly = false
     @State private var alignment = ZoomAlignmentOption.destinationAnchor
+    @State private var dimmingColor = ZoomDimmingColorOption.systemDefault
+    @State private var dimmingEffect = ZoomDimmingEffectOption.systemDefault
 
     private let items = Array(0..<30)
 
@@ -1353,6 +1355,74 @@ private struct ZoomGridDemoScreen: View {
                 return "System default"
             case .customSafeAreaBounds:
                 return "Custom: safe-area bounds"
+            }
+        }
+    }
+
+    private enum ZoomDimmingColorOption: String, CaseIterable {
+        case systemDefault
+        case none
+        case black35
+        case accent15
+
+        var title: String {
+            switch self {
+            case .systemDefault:
+                return "System default"
+            case .none:
+                return "None"
+            case .black35:
+                return "Black 35%"
+            case .accent15:
+                return "Accent 15%"
+            }
+        }
+
+        var value: Color? {
+            switch self {
+            case .systemDefault:
+                return nil
+            case .none:
+                // UIKit uses nil for “default”. There isn’t a public “disable dimming color” value,
+                // so this intentionally picks a clear color to approximate “none”.
+                return .clear
+            case .black35:
+                return .black.opacity(0.35)
+            case .accent15:
+                return .accentColor.opacity(0.15)
+            }
+        }
+    }
+
+    private enum ZoomDimmingEffectOption: String, CaseIterable {
+        case systemDefault
+        case ultraThinMaterial
+        case material
+        case thickMaterial
+
+        var title: String {
+            switch self {
+            case .systemDefault:
+                return "System default"
+            case .ultraThinMaterial:
+                return "Ultra thin material"
+            case .material:
+                return "Material"
+            case .thickMaterial:
+                return "Thick material"
+            }
+        }
+
+        var value: SUINavigationZoomDimmingVisualEffect? {
+            switch self {
+            case .systemDefault:
+                return nil
+            case .ultraThinMaterial:
+                return .blur(style: .systemUltraThinMaterial)
+            case .material:
+                return .blur(style: .systemMaterial)
+            case .thickMaterial:
+                return .blur(style: .systemThickMaterial)
             }
         }
     }
@@ -1422,6 +1492,22 @@ private struct ZoomGridDemoScreen: View {
                 .pickerStyle(.menu)
                 .padding(.horizontal, 16)
 
+                Picker("Dimming color", selection: $dimmingColor) {
+                    ForEach(ZoomDimmingColorOption.allCases, id: \.self) { option in
+                        Text(option.title).tag(option)
+                    }
+                }
+                .pickerStyle(.menu)
+                .padding(.horizontal, 16)
+
+                Picker("Dimming blur", selection: $dimmingEffect) {
+                    ForEach(ZoomDimmingEffectOption.allCases, id: \.self) { option in
+                        Text(option.title).tag(option)
+                    }
+                }
+                .pickerStyle(.menu)
+                .padding(.horizontal, 16)
+
                 LazyVGrid(
                     columns: [GridItem(.adaptive(minimum: 110), spacing: 12)],
                     spacing: 12
@@ -1435,7 +1521,9 @@ private struct ZoomGridDemoScreen: View {
                                 transition: .zoom(
                                     id: id,
                                     interactiveDismissPolicy: interactiveDismissPolicy,
-                                    alignmentRectPolicy: alignmentRectPolicy
+                                    alignmentRectPolicy: alignmentRectPolicy,
+                                    dimmingColor: dimmingColor.value,
+                                    dimmingVisualEffect: dimmingEffect.value
                                 )
                             )
                         } label: {
